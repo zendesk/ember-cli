@@ -433,6 +433,47 @@ describe('Acceptance: smoke-test', function() {
     expect(file(filePath)).to.contain('generated component successfully');
   }));
 
+  it('ember install', co.wrap(function *() {
+    yield copyFixtureFiles('app');
+
+    function *installScenario(packageName, description) {
+      const result = yield runCommand(path.join('.', 'node_modules', 'ember-cli', 'bin', 'ember'), 'install', packageName);
+
+      let exitCode = result.code;
+      let output = result.output.join(EOL);
+
+      expect(exitCode).to.equal(0, `[${packageName} ${description}]: exit code should be 0`);
+      expect(output).to.contain('Installed', `[${packageName} ${description}]: console output should indicate that the package was installed`);
+    }
+
+    function pkgJson() {
+      return fs.readJsonSync('package.json') || {};
+    }
+
+    // ember install ember-copy
+    yield* installScenario('ember-copy', 'latest version of non-scoped package');
+    expect(typeof pkgJson().devDependencies['ember-copy']).to.eql('string');
+
+    // ember install ember-fetch@6.5.0
+    expect(typeof pkgJson().devDependencies['ember-fetch']).to.eql('undefined', 'before installation, package "ember-fetch" should not be present in package.json');
+    yield* installScenario('ember-fetch@6.5.0', 'specific version of non-scoped package');
+    expect(pkgJson().devDependencies['ember-fetch']).to.eql('6.5.0');
+
+    // ember install ember-fetch@^6
+    yield* installScenario('ember-fetch@^6', 'latest version in major release line');
+    expect(pkgJson().devDependencies['ember-fetch']).to.eql('^6');
+
+    // ember install @ember/render-modifiers
+    expect(typeof pkgJson().devDependencies['@ember/render-modifiers']).to.eql('undefined', 'before installation, package "@ember/render-modifiers" should not be present in package.json');
+    yield* installScenario('@ember/render-modifiers', 'scoped package');
+    expect(typeof pkgJson().devDependencies['@ember/render-modifiers']).to.eql('string', 'after installation, package "@ember/render-modifiers" should not be present in package.json');
+
+    // ember install @ember/ordered-set@^0
+    expect(typeof pkgJson().devDependencies['@ember/ordered-set@^0']).to.eql('undefined', 'before installation, package "@ember/ordered-set" should not be present in package.json');
+    yield* installScenario('@ember/ordered-set@^0', 'scoped package');
+    expect(typeof pkgJson().devDependencies['@ember/ordered-set@^0']).to.eql('string', 'after installation, package "@ember/ordered-set" should not be present in package.json');
+  }));
+
   it('template linting works properly for pods and classic structured templates', co.wrap(function *() {
     yield copyFixtureFiles('smoke-tests/with-template-failing-linting');
 
