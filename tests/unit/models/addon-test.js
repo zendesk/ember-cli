@@ -676,31 +676,6 @@ describe('models/addon.js', function () {
     });
   });
 
-  describe('packageInfoCache', function () {
-    let packageInfoCache, addon, ui;
-
-    beforeEach(function () {
-      projectPath = path.resolve(fixturePath, 'simple');
-      const packageContents = require(path.join(projectPath, 'package.json'));
-
-      ui = new MockUI();
-      let cli = new MockCLI({ ui });
-      project = new Project(projectPath, packageContents, ui, cli);
-
-      let AddonTemp = Addon.extend({
-        name: 'temp',
-        root: 'foo',
-      });
-
-      addon = new AddonTemp(project, project);
-      packageInfoCache = addon.packageInfoCache;
-    });
-
-    it("is provided with the parent's `packageInfoCache` object", function () {
-      expect(packageInfoCache).to.equal(project.packageInfoCache);
-    });
-  });
-
   describe('treeForStyles', function () {
     let builder, addon;
 

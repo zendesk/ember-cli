@@ -3,6 +3,7 @@
 const Project = require('../../lib/models/project');
 const Instrumentation = require('../../lib/models/instrumentation');
 const MockUI = require('console-ui/mock');
+const MockCLI = require('./mock-cli');
 
 // eslint-disable-next-line node/no-unpublished-require
 
@@ -18,9 +19,11 @@ class MockProject extends Project {
         node: null,
       },
     });
-    let cli = options.cli || {
-      instrumentation: instr,
-    };
+    let cli =
+      options.cli ||
+      new MockCLI({
+        instrumentation: instr,
+      });
 
     super(root, pkg, ui, cli);
   }
